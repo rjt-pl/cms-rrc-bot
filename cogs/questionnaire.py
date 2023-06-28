@@ -29,10 +29,13 @@ if TYPE_CHECKING:
     class _Question(TypedDict):
         title: str
         type: Literal['multiple_choice', 'text_short', 'text_long', 'yes_no']
-        short: NotRequired[str]  # type `multiple_choice`, `text_short` and `text_long` REQUIRE this
+        # type `multiple_choice`, `text_short` and `text_long` REQUIRE this
+        short: NotRequired[str]
         choices: NotRequired[list[str]]  # type `multiple_choice` REQUIRES this
-        max_length: NotRequired[int]  # type `text_short` and `text_long` REQUIRE this
-        placeholder: NotRequired[str]  # type `text_short` and `text_long` REQUIRE this
+        # type `text_short` and `text_long` REQUIRE this
+        max_length: NotRequired[int]
+        # type `text_short` and `text_long` REQUIRE this
+        placeholder: NotRequired[str]
 
     class _QuestionShort(TypedDict):
         title: str
@@ -106,7 +109,9 @@ class AnswerModal(discord.ui.Modal):
 
         self.answer = discord.ui.TextInput(
             label=self.question['short'],  # type: ignore
-            style=discord.TextStyle.short if self.question['type'] == 'text_short' else discord.TextStyle.long,  # type: ignore
+            # type: ignore
+            style=discord.TextStyle.short if self.question[
+                'type'] == 'text_short' else discord.TextStyle.long,
             placeholder=self.question['placeholder'],  # type: ignore
             max_length=self.question['max_length'],  # type: ignore
             default=default,
@@ -161,28 +166,36 @@ class LogView(discord.ui.View):
         self.clear_items()
         if self.result != AnswerResult.pending:
             if self.result == AnswerResult.approved:
-                self.add_item(discord.ui.Button(style=discord.ButtonStyle.green, label='Approved', disabled=True))
+                self.add_item(discord.ui.Button(
+                    style=discord.ButtonStyle.green, label='Approved', disabled=True))
             elif self.result == AnswerResult.rejected:
-                self.add_item(discord.ui.Button(style=discord.ButtonStyle.red, label='Rejected', disabled=True))
+                self.add_item(discord.ui.Button(
+                    style=discord.ButtonStyle.red, label='Rejected', disabled=True))
             return
 
         components: list[discord.ui.Button[Self] | discord.ui.Select[Self]] = [
-            discord.ui.Button(style=discord.ButtonStyle.green, label='Approve', custom_id=f'questions:::approve-{self.answer["id"]}', row=0, disabled=self.editing),
-            discord.ui.Button(style=discord.ButtonStyle.red, label='Reject', custom_id=f'questions:::reject-{self.answer["id"]}', row=0, disabled=self.editing),
-            discord.ui.Button(style=discord.ButtonStyle.blurple, label='Edit' if not self.editing else 'Stop Editing', custom_id=f'questions:::edit-{self.answer["id"]}-{1 if self.editing else 0}', row=0),
+            discord.ui.Button(style=discord.ButtonStyle.green, label='Approve',
+                              custom_id=f'questions:::approve-{self.answer["id"]}', row=0, disabled=self.editing),
+            discord.ui.Button(style=discord.ButtonStyle.red, label='Reject',
+                              custom_id=f'questions:::reject-{self.answer["id"]}', row=0, disabled=self.editing),
+            discord.ui.Button(style=discord.ButtonStyle.blurple, label='Edit' if not self.editing else 'Stop Editing',
+                              custom_id=f'questions:::edit-{self.answer["id"]}-{1 if self.editing else 0}', row=0),
         ]
 
         if self.editing:
             components.extend([
-                discord.ui.Button(style=discord.ButtonStyle.grey, label=' ', emoji='⬆️', custom_id=f'questions:::index_up-{self.answer["id"]}-{self.question_index}', row=0),
-                discord.ui.Button(style=discord.ButtonStyle.grey, label=' ', emoji='⬇️', custom_id=f'questions:::index_down-{self.answer["id"]}-{self.question_index}', row=0),
+                discord.ui.Button(style=discord.ButtonStyle.grey, label=' ', emoji='⬆️',
+                                  custom_id=f'questions:::index_up-{self.answer["id"]}-{self.question_index}', row=0),
+                discord.ui.Button(style=discord.ButtonStyle.grey, label=' ', emoji='⬇️',
+                                  custom_id=f'questions:::index_down-{self.answer["id"]}-{self.question_index}', row=0),
             ])
 
             if self.question['type'] == 'multiple_choice':
                 components.append(discord.ui.Select(
                     placeholder=f'{self.question["title"]} [CLICK]',
                     options=[
-                        discord.SelectOption(label=choice, value=choice, default=choice == self.question['answer'])
+                        discord.SelectOption(
+                            label=choice, value=choice, default=choice == self.question['answer'])
                         for choice in self.question['choices']  # type: ignore
                     ],
                     custom_id=f'questions:::multiple_choice-{self.answer["id"]}-{self.question_index}',
@@ -220,12 +233,14 @@ class LogView(discord.ui.View):
         embed.description = f'**Answered By:** <@{self.answer["user_id"]}>\n**Questions:**'
         for i, question in enumerate(self.answer['questions'], start=1):
             embed.add_field(
-                name=('👉 ' if self.editing and (i == self.question_index+1) else '') + f'**#{i}. {question["title"]}**',
+                name=('👉 ' if self.editing and (i == self.question_index+1)
+                      else '') + f'**#{i}. {question["title"]}**',
                 value=f'> {question["answer"]}',
                 inline=False,
             )
         if self.reject_message:
-            embed.add_field(name='**Rejected:**', value=f'{self.reject_message}', inline=False)
+            embed.add_field(name='**Rejected:**',
+                            value=f'{self.reject_message}', inline=False)
         return embed
 
     async def run(self) -> None:
@@ -242,6 +257,7 @@ class LogView(discord.ui.View):
 
 class QuestionnaireView(discord.ui.View):
     message: discord.Message
+
     def __init__(
         self,
         bot: Bot,
@@ -266,7 +282,7 @@ class QuestionnaireView(discord.ui.View):
             )
             if self.started:  # and not self.recently_answered:
                 embed.add_field(
-                    name=f'**Question #{self.answered + 1}**',	
+                    name=f'**Question #{self.answered + 1}**',
                     value=self.question['title'],
                     inline=False,
                 )
@@ -303,7 +319,8 @@ class QuestionnaireView(discord.ui.View):
         if self.done:
             return
 
-        components: list[discord.ui.Button[Self] | discord.ui.Select[Self]] = []
+        components: list[discord.ui.Button[Self]
+                         | discord.ui.Select[Self]] = []
 
         if not self.started:
             components.append(discord.ui.Button(
@@ -366,7 +383,8 @@ class QuestionnaireView(discord.ui.View):
                 {
                     'title': question['title'],
                     'type': question['type'],
-                    **({'choices': question['choices']} if question['type'] == 'multiple_choice' else {}),  # type: ignore
+                    # type: ignore
+                    **({'choices': question['choices']} if question['type'] == 'multiple_choice' else {}),
                     **({
                         'short': question['short'],  # type: ignore
                         'placeholder': question['placeholder'],  # type: ignore
@@ -399,7 +417,8 @@ class QuestionnaireView(discord.ui.View):
         # elif custom_id == 'next':
         #     self.recently_answered = False
         elif custom_id == 'multiple_choice':
-            await self.answer_question(interaction.data['values'][0])  # type: ignore
+            # type: ignore
+            await self.answer_question(interaction.data['values'][0])
         elif custom_id == 'text':
             await interaction.response.send_modal(AnswerModal(
                 bot=self.bot,
@@ -421,7 +440,8 @@ class QuestionnaireView(discord.ui.View):
 
     async def on_timeout(self) -> None:
         view = discord.ui.View(timeout=0.01)
-        view.add_item(discord.ui.Button(label='Message timed out', style=discord.ButtonStyle.grey, disabled=True))
+        view.add_item(discord.ui.Button(label='Message timed out',
+                      style=discord.ButtonStyle.grey, disabled=True))
         await self.message.edit(view=view)
 
 
@@ -446,30 +466,37 @@ class Cog(commands.Cog):
     @text_admin_only()
     async def send_button(self, ctx: commands.Context) -> None:
         view = discord.ui.View(timeout=0.01)
-        view.add_item(discord.ui.Button(label='Click me!', style=discord.ButtonStyle.blurple, custom_id='questions:::start'))
+        view.add_item(discord.ui.Button(
+            label='Click me!', style=discord.ButtonStyle.blurple, custom_id='questions:::start'))
         embed = self.bot.embed(BUTTON_MESSAGE)
         await ctx.send(embed=embed, view=view)
 
+    # Prints out a list of all tags for the configured forum.
+    # Use these to set up the tag logic
     @commands.command(name='forumtags')
     @text_admin_only()
     async def forum_tags(self, ctx: commands.Context) -> None:
         embed = self.bot.embed(
             title='Forum Tags',
-            description='\n'.join(f'{(str(tag.emoji) + " ") if tag.emoji else ""}**{tag.name}** (ID: {tag.id})' for tag in self.forum_channel.available_tags) or 'No tags found.',
+            description='\n'.join(
+                f'{(str(tag.emoji) + " ") if tag.emoji else ""}**{tag.name}** (ID: {tag.id})' for tag in self.forum_channel.available_tags) or 'No tags found.',
         )
         await ctx.send(embed=embed)
 
     async def start_questionnaire(self, interaction: discord.Interaction[Bot]) -> None:
-        view = QuestionnaireView(bot=self.bot, cog=self, interaction=interaction)
+        view = QuestionnaireView(
+            bot=self.bot, cog=self, interaction=interaction)
         await view.run()
 
     def get_tags(self, answer: _Answer) -> list[discord.ForumTag]:
-        answers: list[str] = [question['answer'] for question in answer['questions']]
+        answers: list[str] = [question['answer']
+                              for question in answer['questions']]
         answers_lowered: list[str] = [answer.lower() for answer in answers]
 
         tag_ids: set[int] = set()
         for logic in TAG_LOGIC:
-            contains = logic['contains'] if logic['case_sensitive'] else logic['contains'].lower()
+            contains = logic['contains'] if logic['case_sensitive'] else logic['contains'].lower(
+            )
             if any(contains in answer for answer in (
                 answers if logic['case_sensitive'] else answers_lowered
             )):
@@ -483,7 +510,8 @@ class Cog(commands.Cog):
     async def approve_answer(self, interaction: discord.Interaction[Bot], answer: _Answer) -> None:
         await self.answers.remove(answer['id'])
 
-        user: str = str(self.guild.get_member(answer['user_id']) or 'Unknown User')
+        user: str = str(self.guild.get_member(
+            answer['user_id']) or 'Unknown User')
         embed = self.bot.embed(title=f'{user}\'s answers')
         for i, question in enumerate(answer['questions'], start=1):
             embed.add_field(
@@ -492,12 +520,14 @@ class Cog(commands.Cog):
                 inline=False,
             )
         await self.forum_channel.create_thread(
+            # TODO -- Series › Track › IRR#
             name=f'{user}\'s answers',
             embed=embed,
             applied_tags=self.get_tags(answer=answer),
         )
 
-        view = LogView(bot=self.bot, cog=self, answer=answer, result=AnswerResult.approved)
+        view = LogView(bot=self.bot, cog=self, answer=answer,
+                       result=AnswerResult.approved)
         return await view.edit(interaction=interaction)
 
     async def reject_message_modal(self, interaction: discord.Interaction[Bot], answer: _Answer) -> None:
@@ -505,7 +535,8 @@ class Cog(commands.Cog):
 
     async def reject_answer(self, interaction: discord.Interaction[Bot], answer: _Answer, message: str) -> None:
         await self.answers.remove(answer['id'])
-        view = LogView(bot=self.bot, cog=self, answer=answer, result=AnswerResult.rejected, reject_message=message)
+        view = LogView(bot=self.bot, cog=self, answer=answer,
+                       result=AnswerResult.rejected, reject_message=message)
         await view.edit(interaction=interaction)
 
         member = self.guild.get_member(answer['user_id'])
@@ -522,22 +553,26 @@ class Cog(commands.Cog):
 
     async def edit_answer(self, interaction: discord.Interaction[Bot], answer: _Answer, already_editing: bool) -> None:
         if already_editing:
-            view = LogView(bot=self.bot, cog=self, answer=answer, question_index=-1)
+            view = LogView(bot=self.bot, cog=self,
+                           answer=answer, question_index=-1)
             return await view.edit(interaction=interaction)
         view = LogView(bot=self.bot, cog=self, answer=answer, question_index=0)
         return await view.edit(interaction=interaction)
 
     async def set_index(self, interaction: discord.Interaction[Bot], answer: _Answer, index: int) -> None:
-        view = LogView(bot=self.bot, cog=self, answer=answer, question_index=index)
+        view = LogView(bot=self.bot, cog=self,
+                       answer=answer, question_index=index)
         return await view.edit(interaction=interaction)
 
     async def edited_answer(self, interaction: discord.Interaction[Bot], answer: _Answer, question_index: int, new_answer: str) -> None:
-        view = LogView(bot=self.bot, cog=self, answer=answer, question_index=question_index)
+        view = LogView(bot=self.bot, cog=self, answer=answer,
+                       question_index=question_index)
         await view.answer_question(answer=new_answer)
         return await view.edit(interaction=interaction)
 
     async def edit_free_text(self, interaction: discord.Interaction[Bot], answer: _Answer, question_index: int) -> None:
-        view = LogView(bot=self.bot, cog=self, answer=answer, question_index=question_index)
+        view = LogView(bot=self.bot, cog=self, answer=answer,
+                       question_index=question_index)
         question: _QuestionShort = answer['questions'][question_index]
         modal = AnswerModal(
             bot=self.bot,
@@ -578,10 +613,12 @@ class Cog(commands.Cog):
         elif base == 'edit':
             return await self.edit_answer(interaction=interaction, answer=answer, already_editing=rest_no_id == '1')
         elif base in ('index_up', 'index_down'):
-            index: int = (int(rest_no_id) + (-1 if base == 'index_up' else 1)) % len(answer['questions'])
+            index: int = (int(rest_no_id) + (-1 if base ==
+                          'index_up' else 1)) % len(answer['questions'])
             return await self.set_index(interaction=interaction, answer=answer, index=index)
         elif base in ('multiple_choice', 'yes', 'no'):
-            new_answer: str = base.capitalize() if base in ('yes', 'no') else interaction.data['values'][0]  # type: ignore
+            new_answer: str = base.capitalize() if base in (
+                'yes', 'no') else interaction.data['values'][0]  # type: ignore
             return await self.edited_answer(interaction=interaction, answer=answer, question_index=int(rest_no_id), new_answer=new_answer)
         elif base == 'text':
             return await self.edit_free_text(interaction=interaction, answer=answer, question_index=int(rest_no_id))
@@ -600,7 +637,8 @@ class Cog(commands.Cog):
         if prefix != 'questions':
             return
 
-        await self.on_button_click(interaction=interaction, keyword=keyword)  # type: ignore
+        # type: ignore
+        await self.on_button_click(interaction=interaction, keyword=keyword)
 
 
 async def setup(bot: Bot) -> None:

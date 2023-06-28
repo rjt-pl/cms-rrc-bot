@@ -71,7 +71,8 @@ class ConfigArray(Generic[_T]):
     def _dump(self) -> None:
         temp = self.path + f'{os.urandom(16).hex()}.tmp'
         with open(temp, 'w', encoding='utf-8') as tmp:
-            json.dump(self._db.copy(), tmp, ensure_ascii=True, cls=self.encoder, separators=(',', ':'))
+            json.dump(self._db.copy(), tmp, ensure_ascii=True,
+                      cls=self.encoder, separators=(',', ':'))
 
         # atomically move the file
         os.replace(temp, self.path)
@@ -129,7 +130,8 @@ class Config(Generic[_T]):
     def _dump(self) -> None:
         temp = self.path + f'{os.urandom(16).hex()}.tmp'
         with open(temp, 'w', encoding='utf-8') as tmp:
-            json.dump(self._db.copy(), tmp, ensure_ascii=True, cls=self.encoder, separators=(',', ':'))
+            json.dump(self._db.copy(), tmp, ensure_ascii=True,
+                      cls=self.encoder, separators=(',', ':'))
 
         # atomically move the file
         os.replace(temp, self.path)

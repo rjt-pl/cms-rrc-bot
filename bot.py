@@ -30,6 +30,7 @@ class Bot(commands.Bot):
     user: discord.User
     session: aiohttp.ClientSession
     cog_names: tuple[str, ...]
+
     def __init__(
         self,
         owner_ids: list[int],
@@ -41,7 +42,8 @@ class Bot(commands.Bot):
         )
         super().__init__(
             command_prefix=self.get_prefixes,
-            activity=discord.Activity(type=discord.ActivityType.listening, name='you'),
+            activity=discord.Activity(
+                type=discord.ActivityType.listening, name='you'),
             status=discord.Status.online,
             help_command=None,
             strip_after_prefix=True,

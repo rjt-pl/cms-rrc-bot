@@ -1,0 +1,47 @@
+[
+    {
+        "title": "What is the series name?",
+        "type": "multiple_choice",
+        "short": "Series Name",
+        "choices": [
+            "Series 1",
+            "Series 2 idk"
+        ]
+    },
+    {
+        "title": "What is the track name?",
+        "type": "text_short",
+        "short": "Track Name",
+        "max_length": 100,
+        "placeholder": "Enter the track name"
+    },
+    {
+        "title": "What is the race date?",
+        "type": "text_short",
+        "short": "Race Date",
+        "max_length": 100,
+        "placeholder": "Enter the race date"
+    },
+    {
+        "title": "Please describe the incident.",
+        "type": "text_long",
+        "short": "Incident Description",
+        "max_length": 1000,
+        "placeholder": "Enter the incident description"
+    },
+    {
+        "title": "What is the server replay timestamp?",
+        "type": "text_short",
+        "short": "Server Replay Timestamp",
+        "max_length": 100,
+        "placeholder": "Enter the server replay timestamp"
+    },
+    {
+        "title": "Have you watched the replay?",
+        "type": "yes_no"
+    },
+    {
+        "title": "Have you discussed this with the other driver?",
+        "type": "yes_no"
+    }
+]

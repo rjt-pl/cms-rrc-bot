@@ -1,0 +1,4 @@
+*.un\~
+__pycache__
+answers.json
+config/config.json

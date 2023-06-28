@@ -4,44 +4,68 @@
         "type": "multiple_choice",
         "short": "Series Name",
         "choices": [
-            "Series 1",
-            "Series 2 idk"
+            "AC › Sunday › Historics",
+            "ACC › Monday",
+            "ACC › Thursday › ACC50+",
+            "AMS2 › Friday › Friday Night Fun",
+            "iRacing › Sunday › Porsche Cup",
+            "iRacing › Wednesday › GT3 Sprint Series",
+            "rFactor2 › Tuesday › MNRL VHSC",
+            "rFactor2 › Tuesday › MNRL Club Series",
+            "rFactor2 › Thursday › NARS BTCC",
+            "rFactor2 › Saturday › VWSC 2023 Modern",
+            "rFactor2 › Saturday › VWSC 1998 Historic",
+            "Other"
         ]
     },
     {
-        "title": "What is the track name?",
+        "title": "Track name",
         "type": "text_short",
         "short": "Track Name",
         "max_length": 100,
         "placeholder": "Enter the track name"
     },
     {
-        "title": "What is the race date?",
+        "title": "When was the race? [Month dd]",
         "type": "text_short",
         "short": "Race Date",
         "max_length": 100,
-        "placeholder": "Enter the race date"
+        "placeholder": "Enter the race date [Month dd]"
+    },
+    {
+        "title": "Who are you protesting? (Driver name)",
+        "type": "text_short",
+        "short": "Protested Driver",
+        "max_length": 100,
+        "placeholder": "Protested driver name"
     },
     {
         "title": "Please describe the incident.",
         "type": "text_long",
         "short": "Incident Description",
-        "max_length": 1000,
-        "placeholder": "Enter the incident description"
+        "max_length": 500,
+        "placeholder": "Please describe the incident"
     },
     {
         "title": "What is the server replay timestamp?",
         "type": "text_short",
-        "short": "Server Replay Timestamp",
+        "short": "Timestamp",
         "max_length": 100,
-        "placeholder": "Enter the server replay timestamp"
+        "placeholder": "Enter the server replay timestamp (e.g., 01:10:05)"
     },
     {
         "title": "Have you watched the replay?",
+        "short": "Watched Replay",
         "type": "yes_no"
     },
     {
         "title": "Have you discussed this with the other driver?",
+        "short": "Discussed With Other Driver",
+        "type": "yes_no"
+    },
+    {
+        "title": "Has it been at least 12 hours from the end of the race?",
+        "short": "12 Hours Elapsed?",
         "type": "yes_no"
     }
 ]

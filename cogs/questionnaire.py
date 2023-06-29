@@ -30,7 +30,7 @@ if TYPE_CHECKING:
         title: str
         type: Literal['multiple_choice', 'text_short', 'text_long', 'yes_no']
         # type `multiple_choice`, `text_short` and `text_long` REQUIRE this
-        short: NotRequired[str]
+        short: str
         choices: NotRequired[list[str]]  # type `multiple_choice` REQUIRES this
         # type `text_short` and `text_long` REQUIRE this
         max_length: NotRequired[int]
@@ -39,15 +39,21 @@ if TYPE_CHECKING:
 
     class _QuestionShort(TypedDict):
         title: str
+        short: str
         answer: str
         type: Literal['multiple_choice', 'text_short', 'text_long', 'yes_no']
         choices: NotRequired[list[str]]
 
+    # This class contains a raw IRR submission from answers.json
     class _Answer(TypedDict):
         id: str
         user_id: int
         epoch: int
         questions: list[_QuestionShort]
+
+    # This class is just to track the highest IRR number from irr.json
+    class _IRR(TypedDict):
+        irr_num: int
 
     class _TagLogic(TypedDict):
         contains: str
@@ -65,7 +71,7 @@ with open('config/button_message.txt', 'r') as f:
 with open('config/tag_logic.json', 'r', encoding='utf-8') as file:
     TAG_LOGIC: list[_TagLogic] = json.load(file)
 
-
+# Handle IRR rejections with reasons
 class RejectionMessage(discord.ui.Modal):
     def __init__(
         self,
@@ -234,7 +240,7 @@ class LogView(discord.ui.View):
         for i, question in enumerate(self.answer['questions'], start=1):
             embed.add_field(
                 name=('👉 ' if self.editing and (i == self.question_index+1)
-                      else '') + f'**#{i}. {question["title"]}**',
+                      else '') + f'**{question["title"]}**',
                 value=f'> {question["answer"]}',
                 inline=False,
             )
@@ -277,7 +283,7 @@ class QuestionnaireView(discord.ui.View):
         embed = self.bot.embed(title='Questionnaire')
         if not self.done:
             embed.description = (
-                'Please answer the following questions with the components below.'
+                'Please answer the following questions.'
                 f'\nYou have already answered `{self.answered}/{len(QUESTIONS)}` questions.'
             )
             if self.started:  # and not self.recently_answered:
@@ -294,12 +300,14 @@ class QuestionnaireView(discord.ui.View):
             #     )
             else:
                 embed.add_field(
-                    name='**Start Questionnaire**',
-                    value='Click the button below to start the questionnaire.',
+                    name='**Start IRR Submission**',
+                    value='Click the button below to start. You will be asked '
+                        + 'a series of questions about the incident. This '
+                        + 'form takes approximately **2 minutes.**',
                     inline=False,
                 )
         else:
-            embed.description = 'Thank you for answering all the questions!'
+            embed.description = 'Thank you for your submission. The stewards will review the incident and take any appropriate action.'
         return embed
 
     @property
@@ -324,10 +332,12 @@ class QuestionnaireView(discord.ui.View):
 
         if not self.started:
             components.append(discord.ui.Button(
-                label='Start Questionnaire',
+                label='Take me to the questions',
                 style=discord.ButtonStyle.blurple,
                 custom_id='start',
             ))
+        
+        ## Uncomment this block to put a Next Question between each q
         # elif self.recently_answered:
         #     components.append(discord.ui.Button(
         #         label='Next Question',
@@ -382,11 +392,12 @@ class QuestionnaireView(discord.ui.View):
             'questions': [  # type: ignore
                 {
                     'title': question['title'],
+                    'short': question['short'],  # type: ignore
                     'type': question['type'],
+                    'inline': question['inline'],
                     # type: ignore
                     **({'choices': question['choices']} if question['type'] == 'multiple_choice' else {}),
                     **({
-                        'short': question['short'],  # type: ignore
                         'placeholder': question['placeholder'],  # type: ignore
                         'max_length': question['max_length'],  # type: ignore
                     } if question['type'] in ('text_short', 'text_long') else {}),  # type: ignore
@@ -449,6 +460,7 @@ class Cog(commands.Cog):
     def __init__(self, bot: Bot) -> None:
         self.bot: Bot = bot
         self.answers: Config[_Answer] = Config('answers.json')
+        self.irr: Config[_IRR] = Config('irr.json')
 
     @property
     def guild(self) -> discord.Guild:
@@ -467,7 +479,7 @@ class Cog(commands.Cog):
     async def send_button(self, ctx: commands.Context) -> None:
         view = discord.ui.View(timeout=0.01)
         view.add_item(discord.ui.Button(
-            label='Click me!', style=discord.ButtonStyle.blurple, custom_id='questions:::start'))
+            label='File a Protest (IRR)', style=discord.ButtonStyle.blurple, custom_id='questions:::start'))
         embed = self.bot.embed(BUTTON_MESSAGE)
         await ctx.send(embed=embed, view=view)
 
@@ -507,24 +519,52 @@ class Cog(commands.Cog):
         ]  # type: ignore
         return tags
 
-    async def approve_answer(self, interaction: discord.Interaction[Bot], answer: _Answer) -> None:
-        await self.answers.remove(answer['id'])
-
+    # Admin clicked the approval button. This removes the answer from
+    # answers.json, and posts the IRR in the forum.
+    async def approve_answer(self,
+                interaction: discord.Interaction[Bot],
+                answer: _Answer,
+    ) -> None:
+        # Creates a mention for the user so we can click to DM them
         user: str = str(self.guild.get_member(
             answer['user_id']) or 'Unknown User')
-        embed = self.bot.embed(title=f'{user}\'s answers')
+
+        # Get the next IRR number
+        irr_num = self.irr['irr_num']
+        await self.irr.put('irr_num', irr_num + 1)
+
+        # Build the title. XXX question numbers are hard-coded here.
+        # Not ideal, but also a pretty obvious fix if it needs to change.
+        series  = answer['questions'][0]['answer']
+        track   = answer['questions'][1]['answer']
+        thread  = f'[IRR#{irr_num}] {series} › {track}'
+        title   = f'**From** <@{answer["user_id"]}>'
+        embed   = self.bot.embed()
+
+        embed.add_field(
+            name=f'**Submitted By**',
+            value=f'<@{answer["user_id"]}>',
+            inline=False
+        )
+
+        # Set up the embed with all of the answers
         for i, question in enumerate(answer['questions'], start=1):
+            short = question['short']
             embed.add_field(
-                name=f'**#{i}: {question["title"]}**',
+                name=f'**{short}**',
                 value=question['answer'],
-                inline=False,
+                inline=question['inline'],
             )
+
+        # Create forum thread
         await self.forum_channel.create_thread(
-            # TODO -- Series › Track › IRR#
-            name=f'{user}\'s answers',
+            name=thread,
             embed=embed,
             applied_tags=self.get_tags(answer=answer),
         )
+
+        # Remove it from answers.json last in case we have an error above
+        await self.answers.remove(answer['id'])
 
         view = LogView(bot=self.bot, cog=self, answer=answer,
                        result=AnswerResult.approved)
@@ -533,6 +573,7 @@ class Cog(commands.Cog):
     async def reject_message_modal(self, interaction: discord.Interaction[Bot], answer: _Answer) -> None:
         return await interaction.response.send_modal(RejectionMessage(bot=self.bot, cog=self, answer=answer))
 
+    # Get a rejection message from the admin, and send a DM to the user.
     async def reject_answer(self, interaction: discord.Interaction[Bot], answer: _Answer, message: str) -> None:
         await self.answers.remove(answer['id'])
         view = LogView(bot=self.bot, cog=self, answer=answer,
@@ -543,7 +584,8 @@ class Cog(commands.Cog):
         if member is None:
             return
         embed = self.bot.embed(
-            description=f'Your answers have unfortunately been rejected from being posted in {self.forum_channel.mention}.',
+            description=f'Your IRR has been rejected. Please contact the '
+                       + 'Chief Steward if you need more information',
         )
         embed.add_field(name='Reason', value=message, inline=False)
         try:

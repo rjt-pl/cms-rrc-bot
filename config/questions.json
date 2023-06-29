@@ -16,56 +16,65 @@
             "rFactor2 › Saturday › VWSC 2023 Modern",
             "rFactor2 › Saturday › VWSC 1998 Historic",
             "Other"
-        ]
+        ],
+        "inline": false
     },
     {
         "title": "Track name",
         "type": "text_short",
         "short": "Track Name",
         "max_length": 100,
-        "placeholder": "Enter the track name"
+        "placeholder": "Enter the track name",
+        "inline": true
     },
     {
         "title": "When was the race? [Month dd]",
         "type": "text_short",
         "short": "Race Date",
         "max_length": 100,
-        "placeholder": "Enter the race date [Month dd]"
+        "placeholder": "Enter the race date [Month dd]",
+        "inline": true
     },
     {
         "title": "Who are you protesting? (Driver name)",
         "type": "text_short",
         "short": "Protested Driver",
         "max_length": 100,
-        "placeholder": "Protested driver name"
+        "placeholder": "Protested driver name",
+        "inline": false
     },
     {
-        "title": "Please describe the incident.",
+        "title": "Please briefly describe the incident.",
         "type": "text_long",
         "short": "Incident Description",
         "max_length": 500,
-        "placeholder": "Please describe the incident"
+        "placeholder": "Please briefly describe the incident",
+        "inline" : false
     },
     {
         "title": "What is the server replay timestamp?",
         "type": "text_short",
         "short": "Timestamp",
         "max_length": 100,
-        "placeholder": "Enter the server replay timestamp (e.g., 01:10:05)"
+        "placeholder": "Enter the server replay timestamp (e.g., 01:10:05)",
+        "inline" : true
     },
     {
         "title": "Have you watched the replay?",
         "short": "Watched Replay",
-        "type": "yes_no"
+        "type": "yes_no",
+        "inline" : true
     },
     {
         "title": "Have you discussed this with the other driver?",
-        "short": "Discussed With Other Driver",
-        "type": "yes_no"
+        "short": "Discussed With Driver",
+        "type": "yes_no",
+        "inline" : true
     },
     {
         "title": "Has it been at least 12 hours from the end of the race?",
         "short": "12 Hours Elapsed?",
-        "type": "yes_no"
+        "type": "yes_no",
+        "inline" : true
     }
 ]

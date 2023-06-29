@@ -4,7 +4,7 @@
 3. Go to the "Bot" tab (left side, under settings).
 4. Click "Add Bot", then "Reset Token", save this token somewhere to use later.
 
-    MTEyMzY5Nzc4MzMyNTU5Mzc0MQ.GzOqr3.cSeKCCXfb_Zw3UuTGqdRi5Ino_Q0eLfTijDc9U
+    Do not include token in public repo :-)
     
 5. Scroll down until you see "Privileged Gateway Intents", enable all 3 intents:
 	- "PRESENCE INTENT"

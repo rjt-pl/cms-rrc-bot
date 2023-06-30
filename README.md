@@ -13,4 +13,8 @@
 
 * **bot.py** - File that only has the Bot class. 
 
+### Getting Emoji IDs
+
+`\:Emoji_Name:` -- Prints the ID of the specified emoji
+
 See (setup.md)[setup.md] for more information.

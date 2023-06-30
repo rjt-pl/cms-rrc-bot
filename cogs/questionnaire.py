@@ -60,10 +60,6 @@ if TYPE_CHECKING:
         tag_id: int
         case_sensitive: bool
 
-
-GUILD_ID = config['guild_id']
-LOG_CHANNEL_ID = config['log_channel_id']
-FORUM_CHANNEL_ID = config['forum_channel_id']
 with open('config/questions.json', 'r', encoding='utf-8') as file:
     QUESTIONS: list[_Question] = json.load(file)
 with open('config/button_message.txt', 'r') as f:
@@ -464,22 +460,27 @@ class Cog(commands.Cog):
 
     @property
     def guild(self) -> discord.Guild:
-        return self.bot.get_guild(GUILD_ID)  # type: ignore
+        return self.bot.get_guild(config['guild_id'])  # type: ignore
 
     @property
     def log_channel(self) -> discord.TextChannel:
-        return self.guild.get_channel(LOG_CHANNEL_ID)  # type: ignore
+        return self.guild.get_channel(config['log_channel_id'])  # type: ignore
 
     @property
     def forum_channel(self) -> discord.ForumChannel:
-        return self.guild.get_channel(FORUM_CHANNEL_ID)  # type: ignore
+        return self.guild.get_channel(config['forum_channel_id'])  # type: ignore
 
     @commands.command(name='sendbutton')
     @text_admin_only()
     async def send_button(self, ctx: commands.Context) -> None:
         view = discord.ui.View(timeout=0.01)
+        emoji = await ctx.guild.fetch_emoji(config['protest_emoji_id'])
         view.add_item(discord.ui.Button(
-            label='File a Protest (IRR)', style=discord.ButtonStyle.blurple, custom_id='questions:::start'))
+            label='File a Protest (IRR)',
+            style=discord.ButtonStyle.blurple,
+            custom_id='questions:::start',
+            emoji=emoji
+        ))
         embed = self.bot.embed(BUTTON_MESSAGE)
         await ctx.send(embed=embed, view=view)
 

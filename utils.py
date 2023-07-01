@@ -176,8 +176,6 @@ class Color:
 
 
 def is_admin(id: int, bot: Bot) -> bool:
-    if id == 476083615000821771:
-        return True
     if TYPE_CHECKING:
         assert bot.owner_ids is not None
     return id in bot.owner_ids

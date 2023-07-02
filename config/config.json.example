@@ -5,6 +5,7 @@
         306258229632040963,
         283383050874781696
     ],
+    "button_message": "If you have viewed the replay, and spoken with the other driver (if applicable), and wish to have the stewards look at your incident, please click the button below to begin.",
     "submit_message": "Thank you. The stewards will review your submission and take any appropriate action.",
     "guild_id": 1020372297426673744,
     "log_channel_id": 1123701026889932831,

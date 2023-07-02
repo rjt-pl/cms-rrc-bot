@@ -50,6 +50,7 @@ class Bot(commands.Bot):
             intents=discord.Intents.all(),
             case_insensitive=True,
             owner_ids=set(owner_ids),
+            sync_commands=True,
         )
         self.tree.on_error = self.on_app_command_error
 

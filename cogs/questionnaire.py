@@ -62,8 +62,6 @@ if TYPE_CHECKING:
 
 with open('config/questions.json', 'r', encoding='utf-8') as file:
     QUESTIONS: list[_Question] = json.load(file)
-with open('config/button_message.txt', 'r') as f:
-    BUTTON_MESSAGE = f.read()
 with open('config/tag_logic.json', 'r', encoding='utf-8') as file:
     TAG_LOGIC: list[_TagLogic] = json.load(file)
 
@@ -500,33 +498,6 @@ class Cog(commands.Cog):
     @property
     def forum_channel(self) -> discord.ForumChannel:
         return self.guild.get_channel(config['forum_channel_id'])  # type: ignore
-
-    @commands.command(name='sendbutton')
-    @text_admin_only()
-    async def send_button(self, ctx: commands.Context) -> None:
-        view = discord.ui.View(timeout=0.01)
-        emoji = await ctx.guild.fetch_emoji(config['protest_emoji_id'])
-        view.add_item(discord.ui.Button(
-            label='File a Protest (IRR)',
-            style=discord.ButtonStyle.blurple,
-            custom_id='questions:::start',
-            emoji=emoji
-        ))
-        embed = self.bot.embed(BUTTON_MESSAGE)
-        await ctx.send(embed=embed, view=view)
-
-    # Prints out a list of all tags for the configured forum.
-    # Use these to set up the tag logic
-    @commands.command(name='forumtags')
-    @text_admin_only()
-    async def forum_tags(self, ctx: commands.Context) -> None:
-        embed = self.bot.embed(
-            title='Forum Tags',
-            description='\n'.join(
-                f'{(str(tag.emoji) + " ") if tag.emoji else ""}**{tag.name}** '\
-                 '(ID: {tag.id})' for tag in self.forum_channel.available_tags) or 'No tags found.',
-        )
-        await ctx.send(embed=embed)
 
     async def start_questionnaire(
         self,

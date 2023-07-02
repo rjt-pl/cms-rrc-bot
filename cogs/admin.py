@@ -25,10 +25,21 @@ class Admin(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot: Bot = bot
 
+    # Check if the user has the admin_role
+    def can_run_command():
+        def predicate(inter : discord.Interaction):
+            role = discord.utils.find(
+                lambda r: r.name == config['admin_role'], inter.guild.roles
+            )
+            if role in inter.user.roles:
+                return True
+        return app_commands.check(predicate)
+
     @app_commands.command(
         name        = 'reload',
         description = 'Reloads the RRC bot.',
     )
+    @can_run_command()
     async def reload(self, inter: discord.Interaction) -> None:
         await self.bot.load(re=True)
         await ctx.send(embed=self.bot.embed('Successfully reloaded.'))
@@ -38,7 +49,9 @@ class Admin(commands.Cog):
         name        = 'sendbutton',
         description = 'Sends the IRR submit button to the current channel.',
     )
-    async def send_button(self, inter: discord.Interaction) -> None:
+    #@app_commands.check(can_run_command)
+    @can_run_command()
+    async def sendbutton(self, inter: discord.Interaction) -> None:
         view = discord.ui.View(timeout=0.01)
         emoji = await inter.guild.fetch_emoji(config['protest_emoji_id'])
         view.add_item(discord.ui.Button(
@@ -57,7 +70,8 @@ class Admin(commands.Cog):
         name        = "forumtags",
         description = "Display a list of all tags in the configured forum.",
     )
-    async def forum_tags(self, inter: discord.Interaction) -> None:
+    @can_run_command()
+    async def forumtags(self, inter: discord.Interaction) -> None:
         forum = inter.guild.get_channel(config['forum_channel_id'])
         embed = self.bot.embed(
             title='Forum Tags',
@@ -68,6 +82,28 @@ class Admin(commands.Cog):
         )
         await inter.response.send_message(embed=embed)
 
+    # TODO refactor
+
+    @sendbutton.error
+    async def sendbutton_error(self, inter: discord.Interaction, error):
+        await inter.response.send_message(
+            "You do not have permission to run the `/sendbutton` command.",
+            ephemeral=True
+        )
+
+    @forumtags.error
+    async def forumtags_error(self, inter: discord.Interaction, error):
+        await inter.response.send_message(
+            "You do not have permission to run the `/forumtags` command.",
+            ephemeral=True
+        )
+
+    @reload.error
+    async def reload_cmd_error(self, inter: discord.Interaction, error):
+        await inter.response.send_message(
+            "You do not have permission to run the `/reload` command.",
+            ephemeral=True
+        )
 
 async def setup(bot: Bot) -> None:
     await bot.add_cog(Admin(bot))

@@ -173,6 +173,7 @@ class Config(Generic[_T]):
 class Color:
     regular = int(discord.Color.blue())
     error = int(discord.Color.red())
+    success = int(discord.Color.green())
 
 
 def is_admin(id: int, bot: Bot) -> bool:

@@ -176,20 +176,44 @@ class LogView(discord.ui.View):
             return
 
         components: list[discord.ui.Button[Self] | discord.ui.Select[Self]] = [
-            discord.ui.Button(style=discord.ButtonStyle.green, label='Approve',
-                              custom_id=f'questions:::approve-{self.answer["id"]}', row=0, disabled=self.editing),
-            discord.ui.Button(style=discord.ButtonStyle.red, label='Reject',
-                              custom_id=f'questions:::reject-{self.answer["id"]}', row=0, disabled=self.editing),
-            discord.ui.Button(style=discord.ButtonStyle.blurple, label='Edit' if not self.editing else 'Stop Editing',
-                              custom_id=f'questions:::edit-{self.answer["id"]}-{1 if self.editing else 0}', row=0),
+            discord.ui.Button(
+                style=discord.ButtonStyle.green,
+                label='Approve',
+                custom_id=f'questions:::approve-{self.answer["id"]}',
+                row=0,
+                disabled=self.editing
+            ),
+            discord.ui.Button(
+                style=discord.ButtonStyle.red,
+                label='Reject',
+                custom_id=f'questions:::reject-{self.answer["id"]}',
+                row=0,
+                disabled=self.editing
+            ),
+            discord.ui.Button(
+                style=discord.ButtonStyle.blurple,
+                label='Edit' if not self.editing else 'Stop Editing',
+                custom_id=f'questions:::edit-{self.answer["id"]}-{1 if self.editing else 0}',
+                row=0
+            ),
         ]
 
         if self.editing:
             components.extend([
-                discord.ui.Button(style=discord.ButtonStyle.grey, label=' ', emoji='⬆️',
-                                  custom_id=f'questions:::index_up-{self.answer["id"]}-{self.question_index}', row=0),
-                discord.ui.Button(style=discord.ButtonStyle.grey, label=' ', emoji='⬇️',
-                                  custom_id=f'questions:::index_down-{self.answer["id"]}-{self.question_index}', row=0),
+                discord.ui.Button(
+                    style=discord.ButtonStyle.grey,
+                    label=' ',
+                    emoji='⬆️',
+                    custom_id=f'questions:::index_up-{self.answer["id"]}-{self.question_index}',
+                    row=0
+                ),
+                discord.ui.Button(
+                    style=discord.ButtonStyle.grey,
+                    label=' ',
+                    emoji='⬇️',
+                    custom_id=f'questions:::index_down-{self.answer["id"]}-{self.question_index}',
+                    row=0
+                ),
             ])
 
             if self.question['type'] == 'multiple_choice':
@@ -197,7 +221,10 @@ class LogView(discord.ui.View):
                     placeholder=f'{self.question["title"]} [CLICK]',
                     options=[
                         discord.SelectOption(
-                            label=choice, value=choice, default=choice == self.question['answer'])
+                            label=choice,
+                            value=choice,
+                            default=choice == self.question['answer']
+                        )
                         for choice in self.question['choices']  # type: ignore
                     ],
                     custom_id=f'questions:::multiple_choice-{self.answer["id"]}-{self.question_index}',
@@ -280,7 +307,8 @@ class QuestionnaireView(discord.ui.View):
         if not self.done:
             embed.description = (
                 'Please answer the following questions.'
-                f'\nYou have already answered `{self.answered}/{len(QUESTIONS)}` questions.'
+                f'\nYou have already answered '\
+                f'`{self.answered}/{len(QUESTIONS)}` questions.'
             )
             if self.started:  # and not self.recently_answered:
                 embed.add_field(
@@ -297,13 +325,14 @@ class QuestionnaireView(discord.ui.View):
             else:
                 embed.add_field(
                     name='**Start IRR Submission**',
-                    value='Click the button below to start. You will be asked '
-                        + 'a series of questions about the incident. This '
-                        + 'form takes approximately **2 minutes.**',
+                    value='Click the button below to start. You will be '\
+                          'asked a series of questions about the incident. '\
+                          'This form takes approximately **2 minutes.**',
                     inline=False,
                 )
         else:
-            embed.description = 'Thank you for your submission. The stewards will review the incident and take any appropriate action.'
+            embed.description = config['submit_message']
+            embed.color = Color.success
         return embed
 
     @property
@@ -332,7 +361,7 @@ class QuestionnaireView(discord.ui.View):
                 style=discord.ButtonStyle.blurple,
                 custom_id='start',
             ))
-        
+
         ## Uncomment this block to put a Next Question between each q
         # elif self.recently_answered:
         #     components.append(discord.ui.Button(
@@ -442,7 +471,9 @@ class QuestionnaireView(discord.ui.View):
 
     async def run(self) -> None:
         self.update_components()
-        await self.interaction.response.send_message(embed=self.embed, view=self, ephemeral=True)
+        await self.interaction.response.send_message(
+            embed=self.embed, view=self, ephemeral=True
+        )
         self.message = await self.interaction.original_response()
 
     async def on_timeout(self) -> None:
@@ -492,11 +523,15 @@ class Cog(commands.Cog):
         embed = self.bot.embed(
             title='Forum Tags',
             description='\n'.join(
-                f'{(str(tag.emoji) + " ") if tag.emoji else ""}**{tag.name}** (ID: {tag.id})' for tag in self.forum_channel.available_tags) or 'No tags found.',
+                f'{(str(tag.emoji) + " ") if tag.emoji else ""}**{tag.name}** '\
+                 '(ID: {tag.id})' for tag in self.forum_channel.available_tags) or 'No tags found.',
         )
         await ctx.send(embed=embed)
 
-    async def start_questionnaire(self, interaction: discord.Interaction[Bot]) -> None:
+    async def start_questionnaire(
+        self,
+        interaction: discord.Interaction[Bot]
+    ) -> None:
         view = QuestionnaireView(
             bot=self.bot, cog=self, interaction=interaction)
         await view.run()
@@ -571,11 +606,22 @@ class Cog(commands.Cog):
                        result=AnswerResult.approved)
         return await view.edit(interaction=interaction)
 
-    async def reject_message_modal(self, interaction: discord.Interaction[Bot], answer: _Answer) -> None:
-        return await interaction.response.send_modal(RejectionMessage(bot=self.bot, cog=self, answer=answer))
+    async def reject_message_modal(
+        self,
+        interaction: discord.Interaction[Bot],
+        answer: _Answer
+    ) -> None:
+        return await interaction.response.send_modal(
+            RejectionMessage(bot=self.bot, cog=self, answer=answer)
+        )
 
     # Get a rejection message from the admin, and send a DM to the user.
-    async def reject_answer(self, interaction: discord.Interaction[Bot], answer: _Answer, message: str) -> None:
+    async def reject_answer(
+        self,
+        interaction: discord.Interaction[Bot],
+        answer: _Answer,
+        message: str
+    ) -> None:
         await self.answers.remove(answer['id'])
         view = LogView(bot=self.bot, cog=self, answer=answer,
                        result=AnswerResult.rejected, reject_message=message)
@@ -585,8 +631,8 @@ class Cog(commands.Cog):
         if member is None:
             return
         embed = self.bot.embed(
-            description=f'Your IRR has been rejected. Please contact the '
-                       + 'Chief Steward if you need more information',
+            description=f'Your IRR has been rejected. Please contact the '\
+                         'Chief Steward if you need more information',
         )
         embed.add_field(name='Reason', value=message, inline=False)
         try:
@@ -594,7 +640,12 @@ class Cog(commands.Cog):
         except Exception:
             pass
 
-    async def edit_answer(self, interaction: discord.Interaction[Bot], answer: _Answer, already_editing: bool) -> None:
+    async def edit_answer(
+        self,
+        interaction: discord.Interaction[Bot],
+        answer: _Answer,
+        already_editing: bool
+    ) -> None:
         if already_editing:
             view = LogView(bot=self.bot, cog=self,
                            answer=answer, question_index=-1)
@@ -602,18 +653,34 @@ class Cog(commands.Cog):
         view = LogView(bot=self.bot, cog=self, answer=answer, question_index=0)
         return await view.edit(interaction=interaction)
 
-    async def set_index(self, interaction: discord.Interaction[Bot], answer: _Answer, index: int) -> None:
+    async def set_index(
+        self,
+        interaction: discord.Interaction[Bot],
+        answer: _Answer,
+        index: int
+    ) -> None:
         view = LogView(bot=self.bot, cog=self,
                        answer=answer, question_index=index)
         return await view.edit(interaction=interaction)
 
-    async def edited_answer(self, interaction: discord.Interaction[Bot], answer: _Answer, question_index: int, new_answer: str) -> None:
+    async def edited_answer(
+        self,
+        interaction: discord.Interaction[Bot],
+        answer: _Answer,
+        question_index: int,
+        new_answer: str
+    ) -> None:
         view = LogView(bot=self.bot, cog=self, answer=answer,
                        question_index=question_index)
         await view.answer_question(answer=new_answer)
         return await view.edit(interaction=interaction)
 
-    async def edit_free_text(self, interaction: discord.Interaction[Bot], answer: _Answer, question_index: int) -> None:
+    async def edit_free_text(
+        self,
+        interaction: discord.Interaction[Bot],
+        answer: _Answer,
+        question_index: int
+    ) -> None:
         view = LogView(bot=self.bot, cog=self, answer=answer,
                        question_index=question_index)
         question: _QuestionShort = answer['questions'][question_index]
@@ -647,24 +714,35 @@ class Cog(commands.Cog):
 
         answer = self.answers.get(id)
         if answer is None:
-            return await interaction.response.send_message(embed=self.bot.embed('I could not seem to find this asnwer..', color=Color.error), ephemeral=True)
+            return await interaction.response.send_message(
+                embed=self.bot.embed(
+                    'I could not seem to find this asnwer..',
+                    color=Color.error
+                ),
+                ephemeral=True
+            )
+
+        c = { "interaction":interaction, "answer":answer } # Common args
 
         if base == 'approve':
-            return await self.approve_answer(interaction=interaction, answer=answer)
+            return await self.approve_answer(**c)
         elif base == 'reject':
-            return await self.reject_message_modal(interaction=interaction, answer=answer)
+            return await self.reject_message_modal(**c)
         elif base == 'edit':
-            return await self.edit_answer(interaction=interaction, answer=answer, already_editing=rest_no_id == '1')
+            return await self.edit_answer(**c, already_editing=rest_no_id == '1')
         elif base in ('index_up', 'index_down'):
             index: int = (int(rest_no_id) + (-1 if base ==
                           'index_up' else 1)) % len(answer['questions'])
-            return await self.set_index(interaction=interaction, answer=answer, index=index)
+            return await self.set_index(**c, index=index)
         elif base in ('multiple_choice', 'yes', 'no'):
             new_answer: str = base.capitalize() if base in (
                 'yes', 'no') else interaction.data['values'][0]  # type: ignore
-            return await self.edited_answer(interaction=interaction, answer=answer, question_index=int(rest_no_id), new_answer=new_answer)
+            return await self.edited_answer(**c,
+                question_index=int(rest_no_id),
+                new_answer=new_answer
+            )
         elif base == 'text':
-            return await self.edit_free_text(interaction=interaction, answer=answer, question_index=int(rest_no_id))
+            return await self.edit_free_text(**c, question_index=int(rest_no_id))
         else:
             raise  # should not happen
 

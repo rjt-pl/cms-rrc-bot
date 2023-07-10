@@ -87,7 +87,11 @@ class RejectionMessage(discord.ui.Modal):
         self.add_item(self.message)
 
     async def on_submit(self, interaction: discord.Interaction[Bot]) -> None:
-        await self.cog.reject_answer(interaction=interaction, answer=self.answer, message=self.message.value)
+        await self.cog.reject_answer(
+            interaction = interaction,
+            answer      = self.answer,
+            message     = self.message.value
+        )
 
 
 class AnswerModal(discord.ui.Modal):
@@ -108,14 +112,15 @@ class AnswerModal(discord.ui.Modal):
         super().__init__(timeout=300.0, title=self.question['title'])
 
         self.answer = discord.ui.TextInput(
-            label=self.question['short'],  # type: ignore
+            label       = self.question['short'],  # type: ignore
             # type: ignore
-            style=discord.TextStyle.short if self.question[
-                'type'] == 'text_short' else discord.TextStyle.long,
-            placeholder=self.question['placeholder'],  # type: ignore
-            max_length=self.question['max_length'],  # type: ignore
-            default=default,
-            required=True,
+            style       = discord.TextStyle.short 
+                       if self.question['type'] == 'text_short' 
+                     else discord.TextStyle.long,
+            placeholder = self.question['placeholder'],  # type: ignore
+            max_length  = self.question['max_length'],  # type: ignore
+            default     = default,
+            required    = True,
         )
         self.add_item(self.answer)
 

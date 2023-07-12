@@ -55,15 +55,16 @@ if TYPE_CHECKING:
     class _IRR(TypedDict):
         irr_num: int
 
-    class _TagLogic(TypedDict):
-        contains: str
-        tag_id: int
-        case_sensitive: bool
+    # From config/sim_tags.json
+    class _SimTags(TypedDict):
+        sim_name: str
+        forum_tag: int
+        role_id: int
 
 with open('config/questions.json', 'r', encoding='utf-8') as file:
     QUESTIONS: list[_Question] = json.load(file)
-with open('config/tag_logic.json', 'r', encoding='utf-8') as file:
-    TAG_LOGIC: list[_TagLogic] = json.load(file)
+with open('config/sim_tags.json', 'r', encoding='utf-8') as file:
+    SIM_TAGS: list[_SimTags] = json.load(file)
 
 # Handle IRR rejections with reasons
 class RejectionMessage(discord.ui.Modal):
@@ -114,8 +115,8 @@ class AnswerModal(discord.ui.Modal):
         self.answer = discord.ui.TextInput(
             label       = self.question['short'],  # type: ignore
             # type: ignore
-            style       = discord.TextStyle.short 
-                       if self.question['type'] == 'text_short' 
+            style       = discord.TextStyle.short
+                       if self.question['type'] == 'text_short'
                      else discord.TextStyle.long,
             placeholder = self.question['placeholder'],  # type: ignore
             max_length  = self.question['max_length'],  # type: ignore
@@ -512,24 +513,12 @@ class Cog(commands.Cog):
             bot=self.bot, cog=self, interaction=interaction)
         await view.run()
 
-    def get_tags(self, answer: _Answer) -> list[discord.ForumTag]:
-        answers: list[str] = [question['answer']
-                              for question in answer['questions']]
-        answers_lowered: list[str] = [answer.lower() for answer in answers]
-
-        tag_ids: set[int] = set()
-        for logic in TAG_LOGIC:
-            contains = logic['contains'] if logic['case_sensitive'] else logic['contains'].lower(
-            )
-            if any(contains in answer for answer in (
-                answers if logic['case_sensitive'] else answers_lowered
-            )):
-                tag_ids.add(logic['tag_id'])
-
-        tags: list[discord.ForumTag] = [
-            self.forum_channel.get_tag(tag_id) for tag_id in tag_ids
-        ]  # type: ignore
-        return tags
+    # Find matching sim object, or None if there is no match
+    def get_sim(self, series: str) -> _SimTags:
+        (sim, rest) = series.split(maxsplit=1)
+        for sim_tag in SIM_TAGS:
+            if sim_tag['sim_name'] == sim:
+                return(sim_tag)
 
     # Admin clicked the approval button. This removes the answer from
     # answers.json, and posts the IRR in the forum.
@@ -552,7 +541,12 @@ class Cog(commands.Cog):
         thread  = f'[IRR#{irr_num}] {series} › {track}'
         title   = f'**From** <@{answer["user_id"]}>'
         embed   = self.bot.embed()
+        sim_tags= self.get_sim(series)
 
+        print(sim_tags)
+
+        # Submitter, currently just shows the Discord username, but
+        # TODO - Fetch the nickname from the CMS server. GitHub Issue #4.
         embed.add_field(
             name=f'**Submitted By**',
             value=f'<@{answer["user_id"]}>',
@@ -568,11 +562,19 @@ class Cog(commands.Cog):
                 inline=question['inline'],
             )
 
+        # Now figure out who we're supposed to tag
+        if (sim_tags is not None):
+            embed.add_field(
+                name=f'**Simulator**',
+                value=f'<@&{sim_tags["role_id"]}>',
+                inline=True
+            )
+
         # Create forum thread
         await self.forum_channel.create_thread(
             name=thread,
             embed=embed,
-            applied_tags=self.get_tags(answer=answer),
+            applied_tags=[self.forum_channel.get_tag(sim_tags['forum_tag'])]
         )
 
         # Remove it from answers.json last in case we have an error above
@@ -580,6 +582,7 @@ class Cog(commands.Cog):
 
         view = LogView(bot=self.bot, cog=self, answer=answer,
                        result=AnswerResult.approved)
+
         return await view.edit(interaction=interaction)
 
     async def reject_message_modal(

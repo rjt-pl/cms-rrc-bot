@@ -1,0 +1,16 @@
+# cms-rrc-bot - monit configuration for cms-rrc-bot
+#
+# This ensures it stays running. It does not check for changes.
+# Those changes must be pushed manually by running run_rrc_bot.sh
+# or monit restart cms-rrc-bot on host.
+# 
+# sudo apt get install monit
+# Install this file in /etc/monit/conf-enabled
+# monit reload
+# Bot should now be running
+#
+# 2023 Ryan Thompson <i@ry.ca>
+
+check process cms-rrc-bot pidfile /home/ryan/cms-rrc-bot/cms-rrc.bot.pid
+    start program = "/home/ryan/run_rrc_bot.sh" as uid "ryan"
+    stop program = "/bin/bash -c '/bin/kill `/bin/cat /home/ryan/cms-rrc-bot/cms-rrc-bot.pid`'"

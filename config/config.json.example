@@ -1,4 +1,5 @@
 {
+    "pidfile": "cms-rrc-bot.pid",
     "token": "Bot token (see setup.md)",
     "owner_ids": [
         490748473314902016,

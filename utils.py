@@ -45,6 +45,48 @@ __all__ = (
     'application_admin_only',
 )
 
+#
+# Simple PID file handling
+#
+class PIDFile:
+    pidfile: str
+
+    def __init__(self, pidfile: str) -> None:
+        old_pid = None
+
+        print(f'Bot starting up with pid {os.getpid()}')
+
+        try:
+            with open(pidfile, 'r') as file:
+                old_pid = file.read().rstrip()
+
+        except:
+            old_pid = None
+
+        try:
+            old_pid = int(old_pid)
+        except:
+            print("Invalid PIDfile. Continuing.")
+            old_pid = None
+
+        # We got a PID, now see if it's running
+        if old_pid:
+            try:
+                os.kill(old_pid, 0)
+
+            except OSError: # Process not found
+                old_pid = None
+
+            else:
+                print(f"Bot is still running in pid {old_pid}.")
+                print("Please shut it down before continuing.")
+                exit(2)
+
+        # We're in the clear. Make a new pidfile
+        with open(pidfile, 'w') as file:
+            file.write(f'{os.getpid()}')
+            file.close()
+
 
 class ConfigArray(Generic[_T]):
     def __init__(self, name: str, object_hook: Optional[ObjectHook] = None, encoder: Optional[type[json.JSONEncoder]] = None) -> None:

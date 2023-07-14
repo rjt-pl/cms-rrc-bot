@@ -543,8 +543,6 @@ class Cog(commands.Cog):
         embed   = self.bot.embed()
         sim_tags= self.get_sim(series)
 
-        print(sim_tags)
-
         # Submitter, currently just shows the Discord username, but
         # TODO - Fetch the nickname from the CMS server. GitHub Issue #4.
         embed.add_field(
@@ -562,20 +560,18 @@ class Cog(commands.Cog):
                 inline=question['inline'],
             )
 
-        # Now figure out who we're supposed to tag
-        if (sim_tags is not None):
-            embed.add_field(
-                name=f'**Simulator**',
-                value=f'<@&{sim_tags["role_id"]}>',
-                inline=True
-            )
-
         # Create forum thread
-        await self.forum_channel.create_thread(
+        fthread = await self.forum_channel.create_thread(
             name=thread,
             embed=embed,
             applied_tags=[self.forum_channel.get_tag(sim_tags['forum_tag'])]
         )
+
+        # Now figure out who we're supposed to tag
+        if (sim_tags is not None):
+            await fthread.thread.send(
+                content = f'**Attention** <@&{sim_tags["role_id"]}>'
+            )
 
         # Remove it from answers.json last in case we have an error above
         await self.answers.remove(answer['id'])

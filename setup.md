@@ -1,10 +1,20 @@
-	Bot Setup:
+# Initial setup
+
+This document describes the initial setup for the bot. This setup has already
+been done, but if someone else is taking over the maintenance, it may be
+advantageous to move the bot under their Discord account, and these steps
+will help with that.
+
+## Bot Setup
+
 1. Go to "https://discord.com/developers/applications" and make sure you're logged in.
 2. Click "New Application" (top right, left of your profile picture).
 3. Go to the "Bot" tab (left side, under settings).
 4. Click "Add Bot", then "Reset Token", save this token somewhere to use later.
 
+    ```
     Do not include token in public repo :-)
+    ```
     
 5. Scroll down until you see "Privileged Gateway Intents", enable all 3 intents:
 	- "PRESENCE INTENT"
@@ -20,7 +30,8 @@ going to be in a server that you own yourself, I would suggest enabling "Adminis
 
 Bot string: https://discord.com/api/oauth2/authorize?client_id=1123697783325593741&permissions=8&scope=bot%20applications.commands
 
-	Script Setup:
+## Script Setup:
+
 1. Make sure you have python 3.9 or above installed: https://www.python.org/downloads/
 2. Open up CMD and type in "pip install discord", and press Enter.
 3. Head over to the zip file I attached with this and open the "config.json" file in any editor you want (can be .txt).
@@ -28,4 +39,4 @@ Bot string: https://discord.com/api/oauth2/authorize?client_id=11236977833255937
 5. Change the ids in the variable "owner_ids" with the discord user ids of anyone you trust with this bot.
 Not doing so will result in the bot refusing to let you run the commands.
 6. Save the file (probably CTRL+s) and run the "main.py" file, the bot should now appear as online on discord.
-7. Enjoy your bot!
+7. Proceed to [README.md](README.md) for additional setup.

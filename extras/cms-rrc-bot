@@ -11,6 +11,6 @@
 #
 # 2023 Ryan Thompson <i@ry.ca>
 
-check process cms-rrc-bot pidfile /home/ryan/cms-rrc-bot/cms-rrc.bot.pid
+check process cms-rrc-bot pidfile /home/ryan/cms-rrc-bot/cms-rrc-bot.pid
     start program = "/home/ryan/run_rrc_bot.sh" as uid "ryan"
     stop program = "/bin/bash -c '/bin/kill `/bin/cat /home/ryan/cms-rrc-bot/cms-rrc-bot.pid`'"

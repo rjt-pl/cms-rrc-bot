@@ -564,7 +564,8 @@ class Cog(commands.Cog):
         fthread = await self.forum_channel.create_thread(
             name=thread,
             embed=embed,
-            applied_tags=[self.forum_channel.get_tag(sim_tags['forum_tag'])]
+            applied_tags=[self.forum_channel.get_tag(config['open_tag_id']),
+                          self.forum_channel.get_tag(sim_tags['forum_tag'])]
         )
 
         # Now figure out who we're supposed to tag

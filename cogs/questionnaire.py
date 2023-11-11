@@ -538,7 +538,7 @@ class Cog(commands.Cog):
         # Not ideal, but also a pretty obvious fix if it needs to change.
         series  = answer['questions'][0]['answer']
         track   = answer['questions'][1]['answer']
-        thread  = f'[IRR#{irr_num}] {series} › {track}'
+        thread  = f'【IRR#{irr_num}】{series} › {track}'
         title   = f'**From** <@{answer["user_id"]}>'
         embed   = self.bot.embed()
         sim_tags= self.get_sim(series)
